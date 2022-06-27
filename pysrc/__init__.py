@@ -8,7 +8,7 @@ import toml
 import shutil
 import argparse
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 src_dir = os.path.dirname(__file__)
 cur_dir = os.path.abspath(os.curdir)

@@ -1,1 +1,1 @@
-Improve rust-contract command running.
+Fix target dir
