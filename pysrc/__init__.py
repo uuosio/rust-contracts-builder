@@ -7,17 +7,18 @@ import tempfile
 import toml
 import shutil
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 src_dir = os.path.dirname(__file__)
 cur_dir = os.path.abspath(os.curdir)
 
 
+#https://stackabuse.com/how-to-print-colored-text-in-python/
 HEADER = '\033[95m'
 OKBLUE = '\033[94m'
 OKCYAN = '\033[96m'
 OKGREEN = '\033[92m'
-WARNING = '\033[93m'
+WARNING = '\033[1;30;43m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
@@ -58,6 +59,7 @@ def run_builder():
             cmd = shlex.split(cmd)
             subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         else:
+            shutil.copy(f'{cur_dir}/target/wasm32-wasi/release/{lib_name}.wasm', f'{cur_dir}/target/{lib_name}.wasm')
             print(f'''{WARNING}
 wasm-opt not found! Make sure the binary is in your PATH environment.
 We use this tool to optimize the size of your contract's Wasm binary.
@@ -93,3 +95,5 @@ There are ready-to-install packages for many platforms:
     else:
         print('usage: rust-contract build <--release>')
 
+if __name__ == '__main__':
+    run_builder()
