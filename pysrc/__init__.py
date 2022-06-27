@@ -95,7 +95,7 @@ def run_builder():
             lib_name = project['lib']['name']
         target_dir = find_target_dir(lib_name)
         os.environ['RUSTFLAGS'] = f'-C link-arg=-zstack-size={result.stack_size} -Clinker-plugin-lto'
-        cmd = f'cargo +nightly build --target=wasm32-wasi -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
+        cmd = f'cargo +nightly build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
         cmd = shlex.split(cmd)
         subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
 
