@@ -7,7 +7,7 @@ import tempfile
 import toml
 import shutil
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 src_dir = os.path.dirname(__file__)
 cur_dir = os.path.abspath(os.curdir)
@@ -24,10 +24,6 @@ BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
 def run_builder():
-    with open('Cargo.toml', 'r') as f:
-        project = toml.loads(f.read())
-        package_name = project['package']['name']
-        lib_name = project['lib']['name']
     if len(sys.argv) <= 1:
         print('''usage: rust-contract build <--release>''')
         print('''rust-contract init [project_name]''')
@@ -46,8 +42,12 @@ def run_builder():
         for file in files:
             with open(f'{project_name}/{file}', 'w') as f:
                 f.write(files[file])
-
     elif len(sys.argv) > 1 and sys.argv[1] == "build":
+        with open('Cargo.toml', 'r') as f:
+            project = toml.loads(f.read())
+            package_name = project['package']['name']
+            lib_name = project['lib']['name']
+
         os.environ['RUSTFLAGS'] = '-C link-arg=-zstack-size=8192 -Clinker-plugin-lto'
         cmd = 'cargo +nightly build --target=wasm32-wasi -Zbuild-std --no-default-features --release -Zbuild-std-features=panic_immediate_abort'
         cmd = shlex.split(cmd)

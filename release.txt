@@ -1,1 +1,1 @@
-contract builder for EOS Smart Contracts first release.
+Fix rust-contract command running.
