@@ -6,6 +6,7 @@ import platform
 import tempfile
 import toml
 import shutil
+import argparse
 
 __version__ = "0.1.2"
 
@@ -25,11 +26,28 @@ BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
 def run_builder():
-    if len(sys.argv) <= 1:
-        print('''usage: rust-contract build <--release>''')
-        print('''rust-contract init [project_name]''')
-    elif len(sys.argv) > 1 and sys.argv[1] == "init":
-        project_name = sys.argv[2]
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest='subparser')
+
+    parser_a = subparsers.add_parser('init')
+    parser_a.add_argument('project_name')
+
+    parser_b = subparsers.add_parser('build')
+    parser_b.add_argument(
+        '-d', '--debug', action='store_true', help='set to true to enable debug build')
+    parser_b.add_argument(
+        '-s', '--stack-size', default=8192, help='configure stack size')
+
+    result = parser.parse_args()
+    if not result:
+        print('''usage:
+rust-contract init [project_name]
+rust-contract build <--debug> <--stack-size 8192>
+''')
+        sys.exit(-1)
+
+    if result.subparser == "init":
+        project_name = result.project_name
         with open(f'{src_dir}/templates/init/_Cargo.toml', 'r') as f:
             cargo_toml = f.read().replace('{{name}}', project_name)
 
@@ -43,14 +61,19 @@ def run_builder():
         for file in files:
             with open(f'{project_name}/{file}', 'w') as f:
                 f.write(files[file])
-    elif len(sys.argv) > 1 and sys.argv[1] == "build":
+    elif result.subparser == "build":
+        if result.debug:
+            build_mode = ''
+        else:
+            build_mode = '--release'
+
         with open('Cargo.toml', 'r') as f:
             project = toml.loads(f.read())
             package_name = project['package']['name']
             lib_name = project['lib']['name']
 
-        os.environ['RUSTFLAGS'] = '-C link-arg=-zstack-size=8192 -Clinker-plugin-lto'
-        cmd = 'cargo +nightly build --target=wasm32-wasi -Zbuild-std --no-default-features --release -Zbuild-std-features=panic_immediate_abort'
+        os.environ['RUSTFLAGS'] = f'-C link-arg=-zstack-size={result.stack_size} -Clinker-plugin-lto'
+        cmd = f'cargo +nightly build --target=wasm32-wasi -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
         cmd = shlex.split(cmd)
         subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
 
@@ -94,6 +117,7 @@ There are ready-to-install packages for many platforms:
             shutil.rmtree(temp_dir)
     else:
         print('usage: rust-contract build <--release>')
+        print('''rust-contract init [project_name]''')
 
 if __name__ == '__main__':
     run_builder()
