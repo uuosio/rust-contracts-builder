@@ -1,1 +1,1 @@
-Fix rust-contract command running.
+Improve rust-contract command running.

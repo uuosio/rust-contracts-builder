@@ -8,7 +8,7 @@ import toml
 import shutil
 import argparse
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 src_dir = os.path.dirname(__file__)
 cur_dir = os.path.abspath(os.curdir)
@@ -25,25 +25,38 @@ ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
+def find_target_dir(lib_name):
+    parent_dir = os.path.dirname(cur_dir)
+    base_name = os.path.basename(cur_dir)
+    parent_toml_file = os.path.join(parent_dir, 'Cargo.toml')
+    if not os.path.exists(parent_toml_file):
+        return os.path.join(cur_dir, 'target')
+    with open(parent_toml_file, 'r') as f:
+        cargo_toml = toml.loads(f.read())
+        if 'workspace' in cargo_toml:
+            if 'members' in cargo_toml['workspace']:
+                members = cargo_toml['workspace']['members']
+                for member in members:
+                    if base_name == member:
+                        return os.path.join(parent_dir, 'target', lib_name)
+    return os.path.join(cur_dir, 'target')
+
 def run_builder():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser')
 
-    parser_a = subparsers.add_parser('init')
-    parser_a.add_argument('project_name')
+    init = subparsers.add_parser('init')
+    init.add_argument('project_name')
 
-    parser_b = subparsers.add_parser('build')
-    parser_b.add_argument(
+    build = subparsers.add_parser('build')
+    build.add_argument(
         '-d', '--debug', action='store_true', help='set to true to enable debug build')
-    parser_b.add_argument(
+    build.add_argument(
         '-s', '--stack-size', default=8192, help='configure stack size')
 
     result = parser.parse_args()
     if not result:
-        print('''usage:
-rust-contract init [project_name]
-rust-contract build <--debug> <--stack-size 8192>
-''')
+        parser.print_usage()
         sys.exit(-1)
 
     if result.subparser == "init":
@@ -66,23 +79,32 @@ rust-contract build <--debug> <--stack-size 8192>
             build_mode = ''
         else:
             build_mode = '--release'
+        if not os.path.exists('Cargo.toml'):
+            print(f'{FAIL}: Cargo.toml not found in current directory!')
+            sys.exit(-1)
 
         with open('Cargo.toml', 'r') as f:
             project = toml.loads(f.read())
+            if not 'package' in project:
+                print(f'{FAIL} package section not found in Cargo.toml file!')
+                sys.exit(-1)
             package_name = project['package']['name']
+            if not 'lib' in project:
+                print(f'{FAIL} not lib section found in Cargo.toml file!')
+                sys.exit(-1)
             lib_name = project['lib']['name']
-
+        target_dir = find_target_dir(lib_name)
         os.environ['RUSTFLAGS'] = f'-C link-arg=-zstack-size={result.stack_size} -Clinker-plugin-lto'
         cmd = f'cargo +nightly build --target=wasm32-wasi -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
         cmd = shlex.split(cmd)
         subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
 
         if shutil.which('wasm-opt'):
-            cmd = f'wasm-opt ./target/wasm32-wasi/release/{lib_name}.wasm -Oz -o ./target/{lib_name}.wasm'
+            cmd = f'wasm-opt {target_dir}/wasm32-wasi/release/{lib_name}.wasm -Oz -o {target_dir}/{lib_name}.wasm'
             cmd = shlex.split(cmd)
             subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         else:
-            shutil.copy(f'{cur_dir}/target/wasm32-wasi/release/{lib_name}.wasm', f'{cur_dir}/target/{lib_name}.wasm')
+            shutil.copy(f'{target_dir}/wasm32-wasi/release/{lib_name}.wasm', f'{target_dir}/{lib_name}.wasm')
             print(f'''{WARNING}
 wasm-opt not found! Make sure the binary is in your PATH environment.
 We use this tool to optimize the size of your contract's Wasm binary.
@@ -105,19 +127,18 @@ There are ready-to-install packages for many platforms:
 
             with open(f'{src_dir}/templates/abigen/main.rs', 'r') as f:
                 main_rs = f.read()
-                main_rs = main_rs.format(lib_name=lib_name, target=f'{cur_dir}/target')
+                main_rs = main_rs.format(lib_name=lib_name, target=f'{target_dir}')
                 with open(f'{temp_dir}/main.rs', 'w') as f:
                     f.write(main_rs)
 
             del os.environ['RUSTFLAGS']
-            cmd = f'cargo run --package abi-gen --manifest-path={temp_dir}/Cargo.toml --target-dir={cur_dir}/target --release'
+            cmd = f'cargo run --package abi-gen --manifest-path={temp_dir}/Cargo.toml --target-dir={target_dir} --release'
             cmd = shlex.split(cmd)
             subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         finally:
             shutil.rmtree(temp_dir)
     else:
-        print('usage: rust-contract build <--release>')
-        print('''rust-contract init [project_name]''')
+        parser.print_usage()
 
 if __name__ == '__main__':
     run_builder()
