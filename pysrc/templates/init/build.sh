@@ -1,1 +1,1 @@
-rust-contract build --release
+rust-contract build

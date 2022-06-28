@@ -73,8 +73,12 @@ def run_builder():
                 files[file_name] = f.read().replace('{{name}}', project_name)
         os.mkdir(project_name)
         for file in files:
-            with open(f'{project_name}/{file}', 'w') as f:
+            file_path = f'{project_name}/{file}'
+            with open(file_path, 'w') as f:
                 f.write(files[file])
+            if file.endswith('.sh'):
+                if not 'Windows' == platform.system():
+                    os.chmod(file_path, 0o755)
     elif result.subparser == "build":
         if result.debug:
             build_mode = ''
