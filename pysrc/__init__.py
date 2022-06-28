@@ -16,6 +16,7 @@ cur_dir = os.path.abspath(os.curdir)
 
 
 #https://stackabuse.com/how-to-print-colored-text-in-python/
+#https://stackoverflow.com/questions/287871/how-do-i-print-colored-text-to-the-terminal
 HEADER = '\033[95m'
 OKBLUE = '\033[94m'
 OKCYAN = '\033[96m'
@@ -42,6 +43,12 @@ def find_target_dir(lib_name):
     except KeyError:
         return os.path.join(cur_dir, 'target')
     return os.path.join(cur_dir, 'target')
+
+def print_err(msg):
+    print(f'{FAIL}:{msg}{ENDC}')
+
+def print_warning(msg):
+    print(f'{WARNING}:{msg}{ENDC}')
 
 def run_builder():
     parser = argparse.ArgumentParser()
@@ -72,14 +79,18 @@ def run_builder():
                 if file_name == '_Cargo.toml':
                     file_name = 'Cargo.toml'
                 files[file_name] = f.read().replace('{{name}}', project_name)
-        os.mkdir(project_name)
-        for file in files:
-            file_path = f'{project_name}/{file}'
-            with open(file_path, 'w') as f:
-                f.write(files[file])
-            if file.endswith('.sh'):
-                if not 'Windows' == platform.system():
-                    os.chmod(file_path, 0o755)
+        try:
+            os.mkdir(project_name)
+            for file in files:
+                file_path = f'{project_name}/{file}'
+                with open(file_path, 'w') as f:
+                    f.write(files[file])
+                if file.endswith('.sh'):
+                    if not 'Windows' == platform.system():
+                        os.chmod(file_path, 0o755)
+        except FileExistsError as e:
+            print_err(f'{FAIL}: {e}')
+            sys.exit(-1)
     elif result.subparser == "build":
         if result.debug:
             build_mode = ''
@@ -103,7 +114,9 @@ def run_builder():
         os.environ['RUSTFLAGS'] = f'-C link-arg=-zstack-size={result.stack_size} -Clinker-plugin-lto'
         cmd = f'cargo +nightly build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
         cmd = shlex.split(cmd)
-        subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+        ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+        if not ret_code == 0:
+            sys.exit(ret_code)
 
         try:
             check_import_section(f'{target_dir}/wasm32-wasi/release/{lib_name}.wasm')
@@ -114,10 +127,12 @@ def run_builder():
         if shutil.which('wasm-opt'):
             cmd = f'wasm-opt {target_dir}/wasm32-wasi/release/{lib_name}.wasm -Oz -o {target_dir}/{lib_name}.wasm'
             cmd = shlex.split(cmd)
-            subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+            ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+            if not ret_code == 0:
+                sys.exit(ret_code)
         else:
             shutil.copy(f'{target_dir}/wasm32-wasi/release/{lib_name}.wasm', f'{target_dir}/{lib_name}.wasm')
-            print(f'''{WARNING}
+            print_warning('''
 wasm-opt not found! Make sure the binary is in your PATH environment.
 We use this tool to optimize the size of your contract's Wasm binary.
 wasm-opt is part of the binaryen package. You can find detailed
@@ -146,7 +161,9 @@ There are ready-to-install packages for many platforms:
             del os.environ['RUSTFLAGS']
             cmd = f'cargo run --package abi-gen --manifest-path={temp_dir}/Cargo.toml --target-dir={target_dir} --release'
             cmd = shlex.split(cmd)
-            subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+            ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+            if not ret_code == 0:
+                sys.exit(ret_code)
         finally:
             shutil.rmtree(temp_dir)
     else:
