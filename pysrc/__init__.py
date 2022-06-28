@@ -7,6 +7,7 @@ import tempfile
 import toml
 import shutil
 import argparse
+from .wasm_checker import check_import_section
 
 __version__ = "0.1.5"
 
@@ -103,6 +104,12 @@ def run_builder():
         cmd = f'cargo +nightly build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
         cmd = shlex.split(cmd)
         subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+
+        try:
+            check_import_section(f'{target_dir}/wasm32-wasi/release/{lib_name}.wasm')
+        except Exception as e:
+            print(f'{FAIL}: {e}')
+            sys.exit(-1)
 
         if shutil.which('wasm-opt'):
             cmd = f'wasm-opt {target_dir}/wasm32-wasi/release/{lib_name}.wasm -Oz -o {target_dir}/{lib_name}.wasm'
