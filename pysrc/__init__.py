@@ -29,16 +29,17 @@ def find_target_dir(lib_name):
     parent_dir = os.path.dirname(cur_dir)
     base_name = os.path.basename(cur_dir)
     parent_toml_file = os.path.join(parent_dir, 'Cargo.toml')
-    if not os.path.exists(parent_toml_file):
+    try:
+        with open(parent_toml_file, 'r') as f:
+            cargo_toml = toml.loads(f.read())
+            members = cargo_toml['workspace']['members']
+            for member in members:
+                if base_name == member:
+                    return os.path.join(parent_dir, 'target', lib_name)
+    except FileNotFoundError:
         return os.path.join(cur_dir, 'target')
-    with open(parent_toml_file, 'r') as f:
-        cargo_toml = toml.loads(f.read())
-        if 'workspace' in cargo_toml:
-            if 'members' in cargo_toml['workspace']:
-                members = cargo_toml['workspace']['members']
-                for member in members:
-                    if base_name == member:
-                        return os.path.join(parent_dir, 'target', lib_name)
+    except KeyError:
+        return os.path.join(cur_dir, 'target')
     return os.path.join(cur_dir, 'target')
 
 def run_builder():
