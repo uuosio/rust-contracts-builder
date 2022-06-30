@@ -5,7 +5,7 @@ authors = [""]
 edition = "2021"
 
 [dependencies]
-eosio-chain = { version="0.1.1", default-features = false }
+eosio-chain = { version="0.1", default-features = false }
 
 [lib]
 name = "{{name}}"
