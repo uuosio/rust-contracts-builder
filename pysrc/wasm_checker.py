@@ -278,6 +278,7 @@ def check_import_section(wasm_file):
     magic = r.read_bytes(4)
     version = r.read_bytes(4)
 
+    not_allowed_functions = []
     while not r.end():
         id = r.read_byte()
         payload_len = r.read_u32()
@@ -298,4 +299,6 @@ def check_import_section(wasm_file):
                 assert kind == 0
                 type_index = pr.read_u32()
                 if module_str != 'env' or not field_str in allowed_functions:
-                    raise Exception(f'imported function not allowed: {module_str}.{field_str}') 
+                    not_allowed_functions.append(f'{module_str}.{field_str}')
+    if not_allowed_functions:
+        raise Exception(f'imported function(s) not allowed: {not_allowed_functions}') 

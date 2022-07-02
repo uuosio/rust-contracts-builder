@@ -97,17 +97,17 @@ def run_builder():
         else:
             build_mode = '--release'
         if not os.path.exists('Cargo.toml'):
-            print(f'{FAIL}: Cargo.toml not found in current directory!')
+            print_err('Cargo.toml not found in current directory!')
             sys.exit(-1)
 
         with open('Cargo.toml', 'r') as f:
             project = toml.loads(f.read())
             if not 'package' in project:
-                print(f'{FAIL} package section not found in Cargo.toml file!')
+                print_err('package section not found in Cargo.toml file!')
                 sys.exit(-1)
             package_name = project['package']['name']
             if not 'lib' in project:
-                print(f'{FAIL} not lib section found in Cargo.toml file!')
+                print_err('no lib section found in Cargo.toml file!')
                 sys.exit(-1)
             lib_name = project['lib']['name']
         target_dir = find_target_dir(lib_name)
@@ -121,7 +121,7 @@ def run_builder():
         try:
             check_import_section(f'{target_dir}/wasm32-wasi/release/{lib_name}.wasm')
         except Exception as e:
-            print(f'{FAIL}: {e}')
+            print_err(f'{e}')
             sys.exit(-1)
 
         if shutil.which('wasm-opt'):
