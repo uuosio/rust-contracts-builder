@@ -33,7 +33,7 @@ mod {{name}} {
 
         #[chain(action = "inc")]
         pub fn inc_count(&self) {
-            let db = Counter::new_mi(self.receiver, self.receiver);
+            let db = Counter::new_table(self.receiver, self.receiver);
             let it = db.find(1u64);
             if let Some(mut value) = it.get_value() {
                 value.count += 1;
