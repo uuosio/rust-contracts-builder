@@ -125,7 +125,7 @@ def run_builder():
             sys.exit(-1)
 
         if shutil.which('wasm-opt'):
-            cmd = f'wasm-opt {target_dir}/wasm32-wasi/release/{lib_name}.wasm -Oz --strip-debug -o {target_dir}/{lib_name}.wasm'
+            cmd = f'wasm-opt {target_dir}/wasm32-wasi/release/{lib_name}.wasm -O3 --strip-debug -o {target_dir}/{lib_name}.wasm'
             cmd = shlex.split(cmd)
             ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
             if not ret_code == 0:
