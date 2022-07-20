@@ -9,10 +9,9 @@ import shutil
 import argparse
 from .wasm_checker import check_import_section
 
-__version__ = "0.1.7"
+__version__ = "0.2.0"
 
 src_dir = os.path.dirname(__file__)
-cur_dir = os.path.abspath(os.curdir)
 
 
 #https://stackabuse.com/how-to-print-colored-text-in-python/
@@ -28,20 +27,7 @@ BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
 def find_target_dir(lib_name):
-    parent_dir = os.path.dirname(cur_dir)
-    base_name = os.path.basename(cur_dir)
-    parent_toml_file = os.path.join(parent_dir, 'Cargo.toml')
-    try:
-        with open(parent_toml_file, 'r') as f:
-            cargo_toml = toml.loads(f.read())
-            members = cargo_toml['workspace']['members']
-            for member in members:
-                if base_name == member:
-                    return os.path.join(parent_dir, 'target', lib_name)
-    except FileNotFoundError:
-        return os.path.join(cur_dir, 'target')
-    except KeyError:
-        return os.path.join(cur_dir, 'target')
+    cur_dir = os.path.abspath(os.curdir)
     return os.path.join(cur_dir, 'target')
 
 def print_err(msg):
@@ -58,12 +44,13 @@ def run_builder():
     init.add_argument('project_name')
 
     build = subparsers.add_parser('build')
+    build.add_argument('--dir-name', default=".")
     build.add_argument(
         '-d', '--debug', action='store_true', help='set to true to enable debug build')
     build.add_argument(
         '-s', '--stack-size', default=8192, help='configure stack size')
 
-    result = parser.parse_args()
+    result, unknown = parser.parse_known_args()
     if not result:
         parser.print_usage()
         sys.exit(-1)
@@ -92,6 +79,8 @@ def run_builder():
             print_err(f'{FAIL}: {e}')
             sys.exit(-1)
     elif result.subparser == "build":
+        if result.dir_name:
+            os.chdir(result.dir_name)
         if result.debug:
             build_mode = ''
         else:
