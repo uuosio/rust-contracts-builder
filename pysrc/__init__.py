@@ -9,9 +9,9 @@ import shutil
 import argparse
 from .wasm_checker import check_import_section
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
-src_dir = os.path.dirname(__file__)
+src_dir = os.path.dirname(__file__).replace('\\', '/')
 
 
 #https://stackabuse.com/how-to-print-colored-text-in-python/
@@ -20,7 +20,7 @@ HEADER = '\033[95m'
 OKBLUE = '\033[94m'
 OKCYAN = '\033[96m'
 OKGREEN = '\033[92m'
-WARNING = '\033[1;30;43m'
+WARNING = '\033[1;33;40m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
@@ -100,8 +100,10 @@ def run_builder():
                 sys.exit(-1)
             lib_name = project['lib']['name']
         target_dir = find_target_dir(lib_name)
+        target_dir = target_dir.replace('\\', '/')
         os.environ['RUSTFLAGS'] = f'-C link-arg=-zstack-size={result.stack_size} -Clinker-plugin-lto'
-        cmd = f'cargo +nightly build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
+        cmd = fr'cargo +nightly build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
+        print(cmd)
         cmd = shlex.split(cmd)
         ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         if not ret_code == 0:
@@ -134,9 +136,10 @@ There are ready-to-install packages for many platforms:
 
         try:
             temp_dir = tempfile.mkdtemp()
+            temp_dir = temp_dir.replace('\\', '/')
             with open(f'{src_dir}/templates/abigen/Cargo.toml', 'r') as f:
                 cargo_toml = f.read()
-                path_name = os.path.abspath(os.curdir)
+                path_name = os.path.abspath(os.curdir).replace('\\', '/')
                 cargo_toml = cargo_toml.format(package_name=package_name, path_name=path_name)
                 with open(f'{temp_dir}/Cargo.toml', 'w') as f:
                     f.write(cargo_toml)
@@ -149,12 +152,13 @@ There are ready-to-install packages for many platforms:
 
             del os.environ['RUSTFLAGS']
             cmd = f'cargo run --package abi-gen --manifest-path={temp_dir}/Cargo.toml --target-dir={target_dir} --release'
+            print(cmd)
             cmd = shlex.split(cmd)
             ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
             if not ret_code == 0:
                 sys.exit(ret_code)
         finally:
-            shutil.rmtree(temp_dir)
+           shutil.rmtree(temp_dir)
     else:
         parser.print_usage()
 

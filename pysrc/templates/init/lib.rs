@@ -47,17 +47,18 @@ mod {{name}} {
     }
 }
 
+#[cfg(feature="std")]
+#[no_mangle]
+fn native_apply(receiver: u64, first_receiver: u64, action: u64) {
+    crate::{{name}}::native_apply(receiver, first_receiver, action);
+}
+
 #[cfg(test)]
 mod tests {
 
     use eosio_chain::ChainTester;
-    use eosio_chain::serializer::Packer;
+    use eosio_chain::serializer::Packer as _;
     use eosio_chain::eosio_chaintester;
-
-    #[no_mangle]
-    fn native_apply(receiver: u64, first_receiver: u64, action: u64) {
-        crate::{{name}}::native_apply(receiver, first_receiver, action);
-    }
 
     fn deploy_contract(tester: &mut ChainTester) {
         let package_name = env!("CARGO_PKG_NAME");
