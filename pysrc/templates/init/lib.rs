@@ -61,9 +61,6 @@ mod tests {
     use eosio_chain::eosio_chaintester;
 
     fn deploy_contract(tester: &mut ChainTester) {
-        let package_name = env!("CARGO_PKG_NAME");
-        eosio_chaintester::build_contract(&package_name, ".");
-
         let ref wasm_file = format!("./target/{package_name}.wasm");
         let ref abi_file = format!("./target/{package_name}.abi");
         tester.deploy_contract("hello", wasm_file, abi_file).unwrap();
@@ -99,9 +96,6 @@ mod tests {
 
     #[test]
     fn test_inc() {
-        let exe = std::env::current_exe();
-        println!("{exe:?}");
-    
         let mut tester = ChainTester::new();
         tester.enable_debug_contract("hello", true).unwrap();
 
