@@ -61,8 +61,8 @@ mod tests {
     use eosio_chain::eosio_chaintester;
 
     fn deploy_contract(tester: &mut ChainTester) {
-        let ref wasm_file = format!("./target/{package_name}.wasm");
-        let ref abi_file = format!("./target/{package_name}.abi");
+        let ref wasm_file = format!("./target/{{name}}.wasm");
+        let ref abi_file = format!("./target/{{name}}.abi");
         tester.deploy_contract("hello", wasm_file, abi_file).unwrap();
     }
 
@@ -97,7 +97,8 @@ mod tests {
     #[test]
     fn test_inc() {
         let mut tester = ChainTester::new();
-        tester.enable_debug_contract("hello", true).unwrap();
+        //uncomment the following line to enable contract debugging.
+        // tester.enable_debug_contract("hello", true).unwrap();
 
         deploy_contract(&mut tester);
         update_auth(&mut tester);

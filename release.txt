@@ -1,4 +1,4 @@
 v0.2.1 release
 
 1. Add support for debugging
-
+2. Fix contract compiling on the Windows platform
