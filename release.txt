@@ -1,4 +1,5 @@
-v0.2.1 release
+v0.2.2 release
 
-1. Add support for debugging
-2. Fix contract compiling on the Windows platform
+1. Add generate-abi subcommand
+2. Add build-contract subcommand
+
