@@ -1,5 +1,5 @@
-v0.2.2 release
+v0.2.3 release
 
-1. Add generate-abi subcommand
-2. Add build-contract subcommand
+1. update code template
+
 
