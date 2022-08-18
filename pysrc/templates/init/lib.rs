@@ -58,7 +58,6 @@ mod tests {
 
     use eosio_chain::ChainTester;
     use eosio_chain::serializer::Packer as _;
-    use eosio_chain::eosio_chaintester;
 
     fn deploy_contract(tester: &mut ChainTester) {
         let ref wasm_file = format!("./target/{{name}}.wasm");
