@@ -1,9 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[eosio_chain::contract]
+#[rust_chain::contract]
 #[allow(dead_code)]
 mod {{name}} {
-    use eosio_chain::{
+    use rust_chain::{
         Name,
         eosio_println,
     };
@@ -56,8 +56,8 @@ fn native_apply(receiver: u64, first_receiver: u64, action: u64) {
 #[cfg(test)]
 mod tests {
 
-    use eosio_chain::ChainTester;
-    use eosio_chain::serializer::Packer as _;
+    use rust_chain::ChainTester;
+    use rust_chain::serializer::Packer as _;
 
     fn deploy_contract(tester: &mut ChainTester) {
         let ref wasm_file = format!("./target/{{name}}.wasm");
