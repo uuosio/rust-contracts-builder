@@ -216,6 +216,15 @@ allowed_functions = [
         "memmove",
         "memcmp",
         "memset",
+        "set_action_return_value",
+        "get_block_num",
+        "sha3",
+        "blake2_f",
+        "k1_recover",
+        "alt_bn128_add",
+        "alt_bn128_mul",
+        "alt_bn128_pair",
+        "mod_exp"
 ]
 
 class WasmReader(object):
