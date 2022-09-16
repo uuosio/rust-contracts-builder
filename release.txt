@@ -1,5 +1,5 @@
-v0.2.4 release
+v0.2.5 release
 
-1. rename eosio-chain to rust-chain
+1. Add new intrinsic functions
 
 
