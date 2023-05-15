@@ -1,5 +1,5 @@
-v0.2.5 release
+v0.2.6 release
 
-1. Add new intrinsic functions
+1. Add get_code_hash to allowed_functions
 
 
