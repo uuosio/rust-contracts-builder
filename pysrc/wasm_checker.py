@@ -224,7 +224,8 @@ allowed_functions = [
         "alt_bn128_add",
         "alt_bn128_mul",
         "alt_bn128_pair",
-        "mod_exp"
+        "mod_exp",
+        "get_code_hash",
 ]
 
 class WasmReader(object):
