@@ -5,7 +5,7 @@
 mod {{name}} {
     use rust_chain::{
         Name,
-        eosio_println,
+        chain_println,
     };
 
     #[chain(table="counter")]
@@ -38,10 +38,10 @@ mod {{name}} {
             if let Some(mut value) = it.get_value() {
                 value.count += 1;
                 db.update(&it, &value, self.receiver);
-                eosio_println!("count is", value.count);
+                chain_println!("count is", value.count);
             } else {
                 db.store(&Counter{key: 1, count: 1}, self.receiver);
-                eosio_println!("count is", 1);
+                chain_println!("count is", 1);
             }
         }
     }
