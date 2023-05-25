@@ -135,7 +135,7 @@ def run_builder():
             cargo_toml = f.read().replace('{{name}}', project_name)
 
         files = {}
-        for file_name in ['_Cargo.toml', '.gitignore', 'build.sh', 'lib.rs', 'test.py', 'test.sh']:
+        for file_name in ['_Cargo.toml', '.gitignore', 'build.sh', 'lib.rs', 'test.py', 'test.sh', 'pytest.ini']:
             with open(f'{src_dir}/templates/init/{file_name}', 'r') as f:
                 if file_name == '_Cargo.toml':
                     file_name = 'Cargo.toml'

@@ -77,3 +77,4 @@ def test_{{name}}(tester):
     r = tester.push_action('hello', 'inc', args, {'hello': 'active'})
     logger.info('++++++elapsed: %s', r['elapsed'])
     tester.produce_block()
+    logger.info("+++++++test done!")
