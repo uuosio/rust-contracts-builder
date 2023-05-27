@@ -40,7 +40,8 @@ def print_warning(msg):
 
 def build_contract(package_name, build_mode, target_dir, stack_size):
     os.environ['RUSTFLAGS'] = f'-C link-arg=-zstack-size={stack_size} -Clinker-plugin-lto'
-    cmd = fr'cargo +nightly build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
+    os.environ['RUSTC_BOOTSTRAP'] = '1'
+    cmd = fr'cargo build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
     print(cmd)
     cmd = shlex.split(cmd)
     ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
