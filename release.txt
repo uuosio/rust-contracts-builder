@@ -1,4 +1,3 @@
-v0.2.8 release
+v0.2.9 release
 
-1. Update code template
-2. Add pytest.ini to code template in order to show log output by logger.info
+1. build contract with stable rustc

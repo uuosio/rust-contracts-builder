@@ -21,7 +21,7 @@ for root, dirs, files in os.walk("pysrc/templates"):
 
 setup(
     name="rust-contracts-builder",
-    version="0.2.8",
+    version="0.2.9",
     description="Rust Contracts Builder",
     author='The UUOSIO Team',
     license="Apache 2.0",
