@@ -38,12 +38,21 @@ def print_err(msg):
 def print_warning(msg):
     print(f'{WARNING}:{msg}{ENDC}')
 
+def get_rustc_version():
+    try:
+        result = subprocess.run(["rustc", "--version"], capture_output=True, text=True)
+        return result.stdout.strip()
+    except Exception as e:
+        print(f"An error occurred while checking the rustc version: {e}")
+        return None
+
 def build_contract(package_name, build_mode, target_dir, stack_size):
     os.environ['RUSTFLAGS'] = f'-C link-arg=-zstack-size={stack_size} -Clinker-plugin-lto'
+    version = get_rustc_version()
     os.environ['RUSTC_BOOTSTRAP'] = '1'
     print(f"RUSTC_BOOTSTRAP=\"{os.environ['RUSTC_BOOTSTRAP']}\"")
     print(f"RUSTFLAGS=\"{os.environ['RUSTFLAGS']}\"")
-    cmd = fr'cargo build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
+    cmd = fr'cargo +stable build --target=wasm32-wasi --target-dir={target_dir} -Zbuild-std --no-default-features {build_mode} -Zbuild-std-features=panic_immediate_abort'
     print(cmd)
     cmd = shlex.split(cmd)
     ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
