@@ -9,7 +9,7 @@ import shutil
 import argparse
 from .wasm_checker import check_import_section
 
-__version__ = "0.2.9"
+__version__ = "0.2.10"
 
 src_dir = os.path.dirname(__file__).replace('\\', '/')
 

@@ -1,3 +1,3 @@
-v0.2.9 release
+v0.2.10 release
 
-1. build contract with stable rustc
+1. Remove sign-extending instructions via wasm-opt
