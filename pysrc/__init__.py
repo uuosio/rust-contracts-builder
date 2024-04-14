@@ -66,7 +66,7 @@ def build_contract(package_name, build_mode, target_dir, stack_size):
         sys.exit(-1)
 
     if shutil.which('wasm-opt'):
-        cmd = f'wasm-opt {target_dir}/wasm32-wasi/release/{package_name}.wasm -O3 --strip-debug -o {target_dir}/{package_name}.wasm'
+        cmd = f'wasm-opt {target_dir}/wasm32-wasi/release/{package_name}.wasm --signext-lowering -O3 --strip-debug -o {target_dir}/{package_name}.wasm'
         cmd = shlex.split(cmd)
         ret_code = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         if not ret_code == 0:
@@ -76,6 +76,7 @@ def build_contract(package_name, build_mode, target_dir, stack_size):
         print_warning('''
 wasm-opt not found! Make sure the binary is in your PATH environment.
 We use this tool to optimize the size of your contract's Wasm binary.
+It is also used to remove some instructions which are not supported in WASM 1.0
 wasm-opt is part of the binaryen package. You can find detailed
 installation instructions on https://github.com/WebAssembly/binaryen#tools.
 There are ready-to-install packages for many platforms:
